@@ -1,18 +1,39 @@
-import { GreetingChange as GreetingChangeEvent } from "../generated/YourContract/YourContract"
-import { GreetingChange } from "../generated/schema"
+import { BigInt } from "@graphprotocol/graph-ts";
+import { GreetingChange as GreetingChangeEvent } from "../generated/YourContract/YourContract";
+import { Greeting, Sender } from "../generated/schema";
+import { log } from "matchstick-as";
 
 export function handleGreetingChange(event: GreetingChangeEvent): void {
-  let entity = new GreetingChange(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.greetingSetter = event.params.greetingSetter
-  entity.newGreeting = event.params.newGreeting
-  entity.premium = event.params.premium
-  entity.value = event.params.value
+    let senderString = event.params.greetingSetter.concatI32(
+        event.logIndex.toI32()
+    );
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+    log.info("Sender: {}", [senderString.toHexString()]);
 
-  entity.save()
+    let sender = Sender.load(senderString);
+
+    if (sender === null) {
+        sender = new Sender(senderString);
+        sender.address = event.params.greetingSetter;
+        sender.createdAt = event.block.timestamp;
+        sender.greetingCount = BigInt.fromI32(1);
+    } else {
+        sender.greetingCount = sender.greetingCount.plus(BigInt.fromI32(1));
+    }
+
+    let greeting = new Greeting(
+        event.transaction.hash.concatI32(event.logIndex.toI32())
+    );
+
+    greeting.newGreeting = event.params.newGreeting;
+    greeting.sender = senderString;
+    greeting.premium = event.params.premium;
+    greeting.value = event.params.value;
+
+    greeting.blockNumber = event.block.number;
+    greeting.blockTimestamp = event.block.timestamp;
+    greeting.transactionHash = event.transaction.hash;
+
+    sender.save();
+    greeting.save();
 }

@@ -1,10 +1,18 @@
-type GreetingChange @entity(immutable: true) {
-  id: Bytes!
-  greetingSetter: Bytes! # address
-  newGreeting: String! # string
-  premium: Boolean! # bool
-  value: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+type Greeting @entity(immutable: true) {
+    id: Bytes!
+    sender: Sender!
+    newGreeting: String! # string
+    premium: Boolean! # bool
+    value: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type Sender @entity {
+    id: Bytes!
+    address: Bytes!
+    greetings: [Greeting!] @derivedFrom(field: "sender")
+    createdAt: BigInt!
+    greetingCount: BigInt!
 }
