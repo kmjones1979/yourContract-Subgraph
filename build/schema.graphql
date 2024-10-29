@@ -1,0 +1,10 @@
+type GreetingChange @entity(immutable: true) {
+  id: Bytes!
+  greetingSetter: Bytes! # address
+  newGreeting: String! # string
+  premium: Boolean! # bool
+  value: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
